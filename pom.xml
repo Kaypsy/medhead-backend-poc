@@ -124,11 +124,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- H2 pour les tests -->
+        <!-- H2 Database (used for local dev/test profiles) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- REST Assured pour tests d'API -->
@@ -151,6 +151,21 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- Ensure resources are processed with UTF-8 and avoid filtering of .properties files -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>properties</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>yml</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>yaml</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
                 </configuration>
             </plugin>
 
