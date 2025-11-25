@@ -19,6 +19,18 @@ target/
 *.iml
 *.ipr
 
+### OS ###
+.DS_Store
+
+### Logs ###
+logs/
+*.log
+*.out
+
+### Env / local config ###
+.env
+src/main/resources/application-local.properties
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
