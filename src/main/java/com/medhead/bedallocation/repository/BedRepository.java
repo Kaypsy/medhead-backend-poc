@@ -20,6 +20,9 @@ public interface BedRepository extends JpaRepository<Bed, Long> {
 
     long countByHospitalIdAndStatus(Long hospitalId, BedStatus status);
 
+    // Trouver les lits par statut et code de spécialité
+    List<Bed> findByStatusAndSpecialty_Code(BedStatus status, String specialtyCode);
+
     /**
      * Projection légère pour retourner un résumé d'hôpitaux par proximité
      * avec nombre de lits disponibles pour une spécialité donnée.
