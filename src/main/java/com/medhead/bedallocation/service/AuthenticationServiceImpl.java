@@ -3,6 +3,7 @@ package com.medhead.bedallocation.service;
 import com.medhead.bedallocation.dto.UserDTO;
 import com.medhead.bedallocation.dto.UserRegistrationDTO;
 import com.medhead.bedallocation.mapper.UserMapper;
+import com.medhead.bedallocation.exception.DuplicateResourceException;
 import com.medhead.bedallocation.model.User;
 import com.medhead.bedallocation.repository.UserRepository;
 import com.medhead.bedallocation.security.AuthenticationRequest;
@@ -83,10 +84,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         // Contraintes d'unicité
         if (userRepository.existsByUsername(username)) {
-            throw new BadRequestException("Le nom d'utilisateur existe déjà");
+            throw new DuplicateResourceException("Le nom d'utilisateur existe déjà");
         }
         if (userRepository.existsByEmail(email)) {
-            throw new BadRequestException("L'email est déjà utilisé");
+            throw new DuplicateResourceException("L'email est déjà utilisé");
         }
 
         // Création de l'entité utilisateur
