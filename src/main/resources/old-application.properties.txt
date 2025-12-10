@@ -1,0 +1,89 @@
+# =================================
+# APPLICATION
+# =================================
+spring.application.name=medhead-emergency-allocation
+
+# =================================
+# JWT (Sécurité)
+# =================================
+# Clé secrète pour la signature des tokens JWT
+# - À externaliser via une variable d'environnement
+# - Exemple: export JWT_SECRET="votre_cle_ultra_secrete"
+security.jwt.secret=${JWT_SECRET:change-me-in-dev}
+
+# Durée d'expiration du token en millisecondes (24h)
+security.jwt.expiration-ms=86400000
+
+# En-tête utilisé pour transmettre le token
+security.jwt.header=Authorization
+
+# =================================
+# DATASOURCE - PostgreSQL
+# =================================
+spring.datasource.url=jdbc:postgresql://localhost:5432/medhead_db
+spring.datasource.username=medhead_user
+spring.datasource.password=medhead_password
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# HikariCP (pool de connexions)
+spring.datasource.hikari.maximum-pool-size=10
+spring.datasource.hikari.minimum-idle=5
+spring.datasource.hikari.connection-timeout=30000
+spring.datasource.hikari.idle-timeout=600000
+spring.datasource.hikari.max-lifetime=1800000
+
+# =================================
+# JPA / HIBERNATE
+# =================================
+# Mode de gestion du schéma (update en dev, validate en prod)
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.open-in-view=false
+
+# Propriétés Hibernate
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.use_sql_comments=true
+spring.jpa.properties.hibernate.jdbc.batch_size=20
+spring.jpa.properties.hibernate.order_inserts=true
+spring.jpa.properties.hibernate.order_updates=true
+
+# =================================
+# LOGGING
+# =================================
+logging.level.root=INFO
+logging.level.com.medhead=DEBUG
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+# Niveau de log pour Spring Security (utile pour déboguer l'authentification/autorisation)
+logging.level.org.springframework.security=DEBUG
+
+# =================================
+# SERVER
+# =================================
+server.port=8080
+# Contexte de l'application (toutes les routes seront préfixées par /api)
+server.servlet.context-path=/api
+server.error.include-message=always
+server.error.include-binding-errors=always
+
+# =================================
+# OPENAPI / SPRINGDOC (Documentation)
+# =================================
+# Activation et chemins des endpoints OpenAPI
+springdoc.api-docs.enabled=true
+springdoc.api-docs.path=/v3/api-docs
+
+# Activation et chemin de l'UI Swagger
+springdoc.swagger-ui.enabled=true
+# Expose l'UI à l'URL: http://localhost:8080/api/swagger-ui/index.html
+springdoc.swagger-ui.path=/swagger-ui/index.html
+
+# Optionnel: limiter le scan à votre package applicatif
+springdoc.packages-to-scan=com.medhead
+
+# =================================
+# ACTUATOR (Monitoring)
+# =================================
+management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoint.health.show-details=always

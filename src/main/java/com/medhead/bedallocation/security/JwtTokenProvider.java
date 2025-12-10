@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
 import lombok.RequiredArgsConstructor;
@@ -178,7 +179,9 @@ public class JwtTokenProvider {
                         // secret n'était pas du Base64 valable, fallback
                         keyBytes = secret.getBytes(StandardCharsets.UTF_8);
                     }
-                } catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException | DecodingException e) {
+                    // Certains secrets peuvent contenir des caractères non valides pour Base64 (ex: '-')
+                    // Dans ce cas, on interprète la chaîne comme une clé brute en UTF-8
                     keyBytes = secret.getBytes(StandardCharsets.UTF_8);
                 }
 

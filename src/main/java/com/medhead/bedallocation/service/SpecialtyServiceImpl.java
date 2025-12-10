@@ -3,6 +3,8 @@ package com.medhead.bedallocation.service;
 import com.medhead.bedallocation.dto.*;
 import com.medhead.bedallocation.mapper.SpecialtyMapper;
 import com.medhead.bedallocation.model.Specialty;
+import com.medhead.bedallocation.model.SpecialtyGroup;
+import com.medhead.bedallocation.repository.SpecialtyGroupRepository;
 import com.medhead.bedallocation.repository.SpecialtyRepository;
 import com.medhead.bedallocation.service.exception.BadRequestException;
 import com.medhead.bedallocation.service.exception.ResourceNotFoundException;
@@ -21,6 +23,7 @@ import java.util.List;
 public class SpecialtyServiceImpl implements SpecialtyService {
 
     private final SpecialtyRepository specialtyRepository;
+    private final SpecialtyGroupRepository specialtyGroupRepository;
     private final SpecialtyMapper specialtyMapper;
 
     // -------- CRUD --------
@@ -51,6 +54,12 @@ public class SpecialtyServiceImpl implements SpecialtyService {
         });
 
         Specialty toSave = specialtyMapper.fromCreateDto(dto);
+        // Resolve group
+        SpecialtyGroup group = resolveGroupForRequest(dto.getSpecialtyGroup());
+        if (group == null) {
+            throw new BadRequestException("Le groupe de spécialité est requis (id ou code)");
+        }
+        toSave.setSpecialtyGroup(group);
         Specialty saved = specialtyRepository.save(toSave);
         log.info("Spécialité créée: id={}, code={}", saved.getId(), saved.getCode());
         return specialtyMapper.toDto(saved);
@@ -72,6 +81,13 @@ public class SpecialtyServiceImpl implements SpecialtyService {
         }
 
         specialtyMapper.updateEntity(entity, dto);
+        if (dto.getSpecialtyGroup() != null) {
+            SpecialtyGroup group = resolveGroupForRequest(dto.getSpecialtyGroup());
+            if (group == null) {
+                throw new BadRequestException("Le groupe de spécialité spécifié est invalide");
+            }
+            entity.setSpecialtyGroup(group);
+        }
         Specialty saved = specialtyRepository.save(entity);
         log.info("Spécialité mise à jour: id={}", saved.getId());
         return specialtyMapper.toDto(saved);
@@ -99,11 +115,35 @@ public class SpecialtyServiceImpl implements SpecialtyService {
     @Override
     public List<SpecialtySummaryDTO> findByGroup(String group) {
         if (!StringUtils.hasText(group)) throw new BadRequestException("Le groupe est requis");
-        return specialtyMapper.toSummaryDtoList(specialtyRepository.findBySpecialtyGroup(group));
+        return specialtyMapper.toSummaryDtoList(specialtyRepository.findBySpecialtyGroup_Code(group));
     }
 
     @Override
     public List<SpecialtySummaryDTO> findAllActive() {
         return specialtyMapper.toSummaryDtoList(specialtyRepository.findByIsActiveTrue());
+    }
+    // -------- Private helpers --------
+    @Transactional
+    protected SpecialtyGroup resolveGroupForRequest(SpecialtyGroupRefDTO ref) {
+        if (ref == null) return null;
+        if (ref.getId() != null) {
+            return specialtyGroupRepository.findById(ref.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Groupe introuvable avec id=" + ref.getId()));
+        }
+        if (StringUtils.hasText(ref.getCode())) {
+            return specialtyGroupRepository.findByCode(ref.getCode())
+                    .orElseGet(() -> {
+                        if (StringUtils.hasText(ref.getName())) {
+                            // create dynamically
+                            SpecialtyGroup g = new SpecialtyGroup();
+                            g.setCode(ref.getCode());
+                            g.setName(ref.getName());
+                            g.setIsActive(true);
+                            return specialtyGroupRepository.save(g);
+                        }
+                        throw new ResourceNotFoundException("Groupe introuvable avec code=" + ref.getCode());
+                    });
+        }
+        return null;
     }
 }

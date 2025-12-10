@@ -9,6 +9,7 @@ public final class DistanceCalculator {
 
     private DistanceCalculator() {
         // utilitaire
+
     }
 
     /**

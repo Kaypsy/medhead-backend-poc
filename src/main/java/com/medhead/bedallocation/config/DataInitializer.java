@@ -3,11 +3,13 @@ package com.medhead.bedallocation.config;
 import com.medhead.bedallocation.model.Bed;
 import com.medhead.bedallocation.model.Hospital;
 import com.medhead.bedallocation.model.Specialty;
+import com.medhead.bedallocation.model.SpecialtyGroup;
 import com.medhead.bedallocation.model.User;
 import com.medhead.bedallocation.model.enums.BedStatus;
 import com.medhead.bedallocation.repository.BedRepository;
 import com.medhead.bedallocation.repository.HospitalRepository;
 import com.medhead.bedallocation.repository.SpecialtyRepository;
+import com.medhead.bedallocation.repository.SpecialtyGroupRepository;
 import com.medhead.bedallocation.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,7 @@ import java.util.stream.IntStream;
 public class DataInitializer implements CommandLineRunner {
 
     private final SpecialtyRepository specialtyRepository;
+    private final SpecialtyGroupRepository specialtyGroupRepository;
     private final HospitalRepository hospitalRepository;
     private final BedRepository bedRepository;
     private final UserRepository userRepository;
@@ -76,11 +79,17 @@ public class DataInitializer implements CommandLineRunner {
                 new Spec("DERM", "Dermatology", "Medicine")
         );
 
+        // Ensure SpecialtyGroup entities exist for each group in base
+        Map<String, SpecialtyGroup> groupByName = base.stream()
+                .map(Spec::group)
+                .distinct()
+                .collect(Collectors.toMap(g -> g, g -> ensureGroupExists(g)));
+
         List<Specialty> entities = base.stream().map(s -> {
             Specialty sp = new Specialty();
             sp.setCode(s.code());
             sp.setName(s.name());
-            sp.setSpecialtyGroup(s.group());
+            sp.setSpecialtyGroup(groupByName.get(s.group()));
             sp.setDescription("Reference NHS specialty: " + s.name());
             sp.setIsActive(true);
             return sp;
@@ -88,6 +97,18 @@ public class DataInitializer implements CommandLineRunner {
 
         specialtyRepository.saveAll(entities);
         log.info("[DataInitializer] {} spécialités NHS créées", entities.size());
+    }
+
+    private SpecialtyGroup ensureGroupExists(String groupName) {
+        String code = groupName.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]+", "_");
+        return specialtyGroupRepository.findByCode(code)
+                .orElseGet(() -> {
+                    SpecialtyGroup g = new SpecialtyGroup();
+                    g.setCode(code);
+                    g.setName(groupName);
+                    g.setIsActive(true);
+                    return specialtyGroupRepository.save(g);
+                });
     }
 
     private void initHospitalsAndBeds() {

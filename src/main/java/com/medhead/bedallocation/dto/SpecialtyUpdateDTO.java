@@ -26,9 +26,8 @@ public class SpecialtyUpdateDTO {
     @Size(max = 150)
     private String name;
 
-    @Schema(description = "Groupe de spécialité", example = "Médecine")
-    @Size(max = 150)
-    private String specialtyGroup;
+    @Schema(description = "Référence vers le groupe (id ou code; si code inconnu et name fourni, le groupe sera créé)")
+    private SpecialtyGroupRefDTO specialtyGroup;
 
     @Schema(description = "Description fonctionnelle")
     private String description;

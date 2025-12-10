@@ -56,10 +56,10 @@ public class OpenApiConfig {
 
         // Déclaration des serveurs (dev, prod)
         Server devServer = new Server()
-                .url("http://localhost:8080/api")
+                .url("http://localhost:8080/poc")
                 .description("Environnement de développement");
         Server prodServer = new Server()
-                .url("https://api.medhead.com/api")
+                .url("https://api.medhead.com/poc")
                 .description("Environnement de production");
 
         // Tags globaux pour grouper les endpoints

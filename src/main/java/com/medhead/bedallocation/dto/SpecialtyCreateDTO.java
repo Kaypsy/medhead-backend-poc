@@ -28,10 +28,9 @@ public class SpecialtyCreateDTO {
     @Size(max = 150)
     private String name;
 
-    @Schema(description = "Groupe de spécialité", example = "Médecine", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank
-    @Size(max = 150)
-    private String specialtyGroup;
+    @Schema(description = "Référence vers le groupe de spécialité (id ou code; si code inconnu et name fourni, le groupe sera créé)",
+            example = "{\n  'id': 3\n}")
+    private SpecialtyGroupRefDTO specialtyGroup;
 
     @Schema(description = "Description fonctionnelle")
     private String description;

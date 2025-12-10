@@ -38,10 +38,8 @@ public class SpecialtyDTO {
     @Size(max = 150)
     private String name;
 
-    @Schema(description = "Groupe de spécialité", example = "Médecine")
-    @NotBlank
-    @Size(max = 150)
-    private String specialtyGroup;
+    @Schema(description = "Groupe de spécialité")
+    private SpecialtyGroupDTO specialtyGroup;
 
     @Schema(description = "Description fonctionnelle")
     private String description;
