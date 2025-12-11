@@ -52,7 +52,7 @@ public class Specialty {
     /** Nom officiel NHS (ex: "Cardiologie"). */
     @NotBlank
     @Size(max = 150)
-    @Column(name = "name", nullable = false, length = 150)
+    @Column(name = "name", nullable = false, length = 150, unique = true)
     private String name;
 
     /** Groupe de spécialité. */

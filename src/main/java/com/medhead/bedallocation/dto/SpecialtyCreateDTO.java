@@ -1,5 +1,7 @@
 package com.medhead.bedallocation.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.medhead.bedallocation.dto.serde.SpecialtyGroupRefDeserializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -28,8 +30,9 @@ public class SpecialtyCreateDTO {
     @Size(max = 150)
     private String name;
 
-    @Schema(description = "Référence vers le groupe de spécialité (id ou code; si code inconnu et name fourni, le groupe sera créé)",
-            example = "{\n  'id': 3\n}")
+    @Schema(description = "Référence vers le groupe de spécialité. Peut être un nombre (id) ou un objet {id, code, name}.",
+            example = "3")
+    @JsonDeserialize(using = SpecialtyGroupRefDeserializer.class)
     private SpecialtyGroupRefDTO specialtyGroup;
 
     @Schema(description = "Description fonctionnelle")

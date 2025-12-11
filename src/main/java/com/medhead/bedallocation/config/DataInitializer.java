@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.boot.CommandLineRunner;
 
 import java.util.*;
+import java.text.Normalizer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -59,48 +60,155 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initSpecialties() {
-        if (specialtyRepository.count() > 0) {
-            log.info("[DataInitializer] Spécialités déjà présentes: {} — aucune création", specialtyRepository.count());
-            return;
+        // Ne pas quitter si des données existent déjà: l'initialisation est idempotente
+
+        // Mapping complet fourni: Groupe de spécialité => Liste des spécialités
+        Map<String, List<String>> mapping = new LinkedHashMap<>();
+
+        mapping.put("Anesthésie", List.of(
+                "Anesthésie",
+                "Soins intensifs"
+        ));
+
+        mapping.put("Oncologie clinique", List.of(
+                "Oncologie clinique"
+        ));
+
+        mapping.put("Groupe dentaire", List.of(
+                "Spécialités dentaires supplémentaires",
+                "Radiologie dentaire et maxillo-faciale",
+                "Endodontie",
+                "Chirurgie buccale et maxillo-faciale",
+                "Pathologie buccale et maxillo-faciale",
+                "Médecine buccale",
+                "Chirurgie buccale",
+                "Orthodontie",
+                "Dentisterie pédiatrique",
+                "Parodontie",
+                "Prosthodontie",
+                "Dentisterie restauratrice",
+                "Dentisterie de soins spéciaux"
+        ));
+
+        mapping.put("Médecine d'urgence", List.of(
+                "Médecine d'urgence"
+        ));
+
+        mapping.put("Groupe de médecine générale", List.of(
+                "Médecine interne de soins aigus",
+                "Allergie",
+                "Médecine audiovestibulaire",
+                "Cardiologie",
+                "Génétique clinique",
+                "Neurophysiologie clinique",
+                "Pharmacologie clinique et thérapeutique",
+                "Dermatologie",
+                "Endocrinologie et diabète sucré",
+                "Gastroentérologie",
+                "Médecine générale (interne)",
+                "Médecine générale",
+                "Médecine générale (GP) 6 mois",
+                "Médecine génito-urinaire",
+                "Médecine gériatrique",
+                "Maladies infectieuses",
+                "Oncologie médicale",
+                "Ophtalmologie médicale",
+                "Neurologie",
+                "Médecine du travail",
+                "Autre",
+                "Médecine palliative",
+                "Médecine de réadaptation",
+                "Médecine rénale",
+                "Médecine respiratoire",
+                "Rhumatologie",
+                "Médecine du sport et de l'exercice"
+        ));
+
+        mapping.put("Obstétrique et gynécologie", List.of(
+                "Santé publique sexuelle et procréative"
+        ));
+
+        mapping.put("Groupe pédiatrique", List.of(
+                "Cardiologie pédiatrique",
+                "Pédiatrie"
+        ));
+
+        mapping.put("Groupe de pathologie", List.of(
+                "Pathologie chimique",
+                "Neuropathologie diagnostique",
+                "Histopathologie médico-légale",
+                "Pathologie générale",
+                "Hématologie",
+                "Histopathologie",
+                "Immunologie",
+                "Microbiologie médicale",
+                "Pathologie pédiatrique et périnatale",
+                "Virologie"
+        ));
+
+        mapping.put("Groupe Pronostics et gestion de la santé/Santé communautaire", List.of(
+                "Service de santé communautaire dentaire",
+                "Service de santé communautaire médicale",
+                "Santé publique dentaire",
+                "Pratique de l’art dentaire",
+                "Santé publique"
+        ));
+
+        mapping.put("Groupe de psychiatrie", List.of(
+                "Psychiatrie infantile et adolescente",
+                "Psychiatrie légale",
+                "Psychiatrie générale",
+                "Psychiatrie de la vieillesse",
+                "Psychiatrie des troubles d'apprentissage",
+                "Psychothérapie"
+        ));
+
+        mapping.put("Groupe de radiologie", List.of(
+                "Radiologie clinique",
+                "Médecine nucléaire"
+        ));
+
+        mapping.put("Groupe chirurgical", List.of(
+                "Chirurgie cardiothoracique",
+                "Chirurgie générale",
+                "Neurochirurgie",
+                "Ophtalmologie",
+                "Otolaryngologie",
+                "Chirurgie pédiatrique",
+                "Chirurgie plastique",
+                "Traumatologie et chirurgie orthopédique",
+                "Urologie",
+                "Chirurgie vasculaire"
+        ));
+
+        int createdGroups = 0;
+        int createdSpecs = 0;
+
+        for (Map.Entry<String, List<String>> entry : mapping.entrySet()) {
+            String groupName = entry.getKey();
+            SpecialtyGroup group = ensureGroupExists(groupName);
+            // Count creation by checking if just created is not straightforward; skip exact count for groups
+            for (String specName : entry.getValue()) {
+                String specCode = toCode(specName);
+                Optional<Specialty> existing = specialtyRepository.findByCode(specCode);
+                if (existing.isEmpty()) {
+                    Specialty sp = new Specialty();
+                    sp.setCode(specCode);
+                    sp.setName(specName);
+                    sp.setSpecialtyGroup(group);
+                    sp.setDescription("Spécialité: " + specName + " (groupe: " + groupName + ")");
+                    sp.setIsActive(true);
+                    specialtyRepository.save(sp);
+                    createdSpecs++;
+                }
+            }
         }
 
-        // Jeu de références abrégé basé sur des familles NHS courantes
-        record Spec(String code, String name, String group) {}
-        List<Spec> base = List.of(
-                new Spec("CARD", "Cardiology", "Medicine"),
-                new Spec("NEUR", "Neurology", "Medicine"),
-                new Spec("ORTH", "Trauma and Orthopaedics", "Surgery"),
-                new Spec("ONCO", "Oncology", "Medicine"),
-                new Spec("PED", "Paediatrics", "Medicine"),
-                new Spec("EMER", "Emergency Medicine", "Acute Care"),
-                new Spec("GENM", "General Medicine", "Medicine"),
-                new Spec("GSUR", "General Surgery", "Surgery"),
-                new Spec("PSYC", "Psychiatry", "Mental Health"),
-                new Spec("DERM", "Dermatology", "Medicine")
-        );
-
-        // Ensure SpecialtyGroup entities exist for each group in base
-        Map<String, SpecialtyGroup> groupByName = base.stream()
-                .map(Spec::group)
-                .distinct()
-                .collect(Collectors.toMap(g -> g, g -> ensureGroupExists(g)));
-
-        List<Specialty> entities = base.stream().map(s -> {
-            Specialty sp = new Specialty();
-            sp.setCode(s.code());
-            sp.setName(s.name());
-            sp.setSpecialtyGroup(groupByName.get(s.group()));
-            sp.setDescription("Reference NHS specialty: " + s.name());
-            sp.setIsActive(true);
-            return sp;
-        }).collect(Collectors.toList());
-
-        specialtyRepository.saveAll(entities);
-        log.info("[DataInitializer] {} spécialités NHS créées", entities.size());
+        log.info("[DataInitializer] Groupes de spécialités préparés: {} (créations nouvelles non comptabilisées); Spécialités créées: {}", mapping.size(), createdSpecs);
     }
 
     private SpecialtyGroup ensureGroupExists(String groupName) {
-        String code = groupName.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]+", "_");
+        String code = toCode(groupName);
         return specialtyGroupRepository.findByCode(code)
                 .orElseGet(() -> {
                     SpecialtyGroup g = new SpecialtyGroup();
@@ -109,6 +217,19 @@ public class DataInitializer implements CommandLineRunner {
                     g.setIsActive(true);
                     return specialtyGroupRepository.save(g);
                 });
+    }
+
+    private String toCode(String value) {
+        if (value == null) return null;
+        String normalized = Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        String code = normalized
+                .toUpperCase(Locale.ROOT)
+                .replace("’", "'")
+                .replaceAll("[^A-Z0-9]+", "_")
+                .replaceAll("_+", "_")
+                .replaceAll("^_+|_+$", "");
+        return code;
     }
 
     private void initHospitalsAndBeds() {

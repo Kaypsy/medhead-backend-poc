@@ -47,7 +47,7 @@ public class User {
 
     @Email
     @Size(max = 255)
-    @Column(length = 255)
+    @Column(length = 255, unique = true)
     private String email;
 
     /**

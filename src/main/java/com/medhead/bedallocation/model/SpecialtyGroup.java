@@ -45,7 +45,7 @@ public class SpecialtyGroup {
 
     @NotBlank
     @Size(max = 150)
-    @Column(name = "name", nullable = false, length = 150)
+    @Column(name = "name", nullable = false, length = 150, unique = true)
     private String name;
 
     @Column(name = "description", columnDefinition = "TEXT")

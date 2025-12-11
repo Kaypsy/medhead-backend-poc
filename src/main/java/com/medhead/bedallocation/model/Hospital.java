@@ -33,7 +33,7 @@ public class Hospital {
 
     @NotBlank
     @Size(max = 200)
-    @Column(nullable = false, length = 200)
+    @Column(nullable = false, length = 200, unique = true)
     private String name;
 
     private String address;
