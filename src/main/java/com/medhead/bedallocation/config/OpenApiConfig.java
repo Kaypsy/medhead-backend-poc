@@ -64,7 +64,8 @@ public class OpenApiConfig {
 
         // Tags globaux pour grouper les endpoints
         List<Tag> tags = Arrays.asList(
-                new Tag().name("Hospitals").description("Endpoints de gestion et de recherche des hôpitaux")
+                new Tag().name("Hospitals").description("Endpoints de gestion et de recherche des hôpitaux"),
+                new Tag().name("Users").description("Endpoints de gestion des utilisateurs")
         );
 
         return new OpenAPI()

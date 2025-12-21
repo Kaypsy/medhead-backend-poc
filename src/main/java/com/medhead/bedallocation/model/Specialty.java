@@ -31,7 +31,7 @@ import java.util.Set;
         },
         indexes = {
                 @Index(name = "idx_specialty_code", columnList = "code"),
-                @Index(name = "idx_specialty_group_fk", columnList = "specialty_group_id")
+                @Index(name = "idx_specialty_group_fk", columnList = "specialty_group")
         }
 )
 @NoArgsConstructor
@@ -57,7 +57,7 @@ public class Specialty {
 
     /** Groupe de spécialité. */
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "specialty_group_id")
+    @JoinColumn(name = "specialty_group", nullable = false)
     private SpecialtyGroup specialtyGroup;
 
     /** Description fonctionnelle, libre (stockée en TEXT). */
