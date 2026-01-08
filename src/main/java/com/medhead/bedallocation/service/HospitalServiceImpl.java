@@ -66,14 +66,31 @@ public class HospitalServiceImpl implements HospitalService {
     @Transactional
     public HospitalDTO create(HospitalCreateDTO dto) {
         if (dto == null) throw new BadRequestException("Le payload de création hospital est requis");
+        log.info("[HospitalService] Tentative de création d'hôpital: name={}, city={}, specialtyIds={}", 
+                dto.getName(), dto.getCity(), dto.getSpecialtyIds());
+        
         validateCoordinates(dto.getLatitude(), dto.getLongitude());
 
+        // Vérification d'unicité du nom pour éviter une erreur 500 (DataIntegrityViolation)
+        if (hospitalRepository.existsByName(dto.getName())) {
+            log.warn("[HospitalService] Conflit de nom pour la création d'hôpital: {}", dto.getName());
+            throw new com.medhead.bedallocation.exception.DuplicateResourceException("Un hôpital avec le nom '" + dto.getName() + "' existe déjà");
+        }
+
         Set<Specialty> specialties = resolveSpecialties(dto.getSpecialtyIds());
+        log.debug("[HospitalService] Spécialités résolues: count={}", specialties != null ? specialties.size() : 0);
+        
         Hospital entity = hospitalMapper.fromCreateDto(dto, specialties);
         entity.recalculateAvailableBeds();
-        Hospital saved = hospitalRepository.save(entity);
-        log.info("Hôpital créé: id={}, name={}", saved.getId(), saved.getName());
-        return hospitalMapper.toDto(saved);
+        
+        try {
+            Hospital saved = hospitalRepository.save(entity);
+            log.info("Hôpital créé avec succès: id={}, name={}", saved.getId(), saved.getName());
+            return hospitalMapper.toDto(saved);
+        } catch (Exception e) {
+            log.error("[HospitalService] Erreur inattendue lors de la sauvegarde de l'hôpital: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
@@ -232,12 +249,15 @@ public class HospitalServiceImpl implements HospitalService {
     }
 
     private Set<Specialty> resolveSpecialties(List<Long> specialtyIds) {
-        if (specialtyIds == null || specialtyIds.isEmpty()) return null;
-        Set<Specialty> set = specialtyIds.stream()
+        if (specialtyIds == null || specialtyIds.isEmpty()) return new HashSet<>();
+        return specialtyIds.stream()
+                .filter(java.util.Objects::nonNull)
                 .map(id -> specialtyRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("Spécialité introuvable avec id=" + id)))
+                        .orElseThrow(() -> {
+                            log.error("[HospitalService] Spécialité introuvable avec id={}", id);
+                            return new ResourceNotFoundException("Spécialité introuvable avec id=" + id);
+                        }))
                 .collect(Collectors.toSet());
-        return set;
     }
 
     /**

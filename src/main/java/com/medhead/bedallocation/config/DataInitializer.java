@@ -352,5 +352,29 @@ public class DataInitializer implements CommandLineRunner {
         } else {
             log.info("[DataInitializer] Utilisateur standard déjà présent (username=user)");
         }
+
+        // Ajout de l'utilisateur fourni par l'utilisateur du POC pour faciliter ses tests
+        if (!userRepository.existsByUsername("admin@admin.com")) {
+            User pocAdmin = new User();
+            pocAdmin.setUsername("admin@admin.com");
+            pocAdmin.setPassword(passwordEncoder.encode("password"));
+            pocAdmin.setEmail("admin@admin.com");
+            pocAdmin.setRoles("ROLE_ADMIN");
+            pocAdmin.setIsActive(true);
+            userRepository.save(pocAdmin);
+            log.info("[DataInitializer] Utilisateur POC ADMIN créé (username=admin@admin.com)");
+        }
+
+        // Ajout de l'utilisateur fourni par l'utilisateur du POC pour faciliter ses tests (V2)
+        if (!userRepository.existsByUsername("lzephir")) {
+            User lzephir = new User();
+            lzephir.setUsername("lzephir");
+            lzephir.setPassword(passwordEncoder.encode("P@ssw0rd!"));
+            lzephir.setEmail("lzephir@medhead.com");
+            lzephir.setRoles("ROLE_ADMIN");
+            lzephir.setIsActive(true);
+            userRepository.save(lzephir);
+            log.info("[DataInitializer] Utilisateur POC ADMIN lzephir créé");
+        }
     }
 }

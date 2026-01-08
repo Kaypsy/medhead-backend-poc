@@ -17,8 +17,11 @@ import java.util.List;
 /**
  * Groupe de spécialités médicales (ex: Groupe dentaire, Groupe de médecine générale).
  */
+import lombok.ToString;
+
 @Data
 @Entity
+@ToString(exclude = "specialties")
 @Table(
         name = "specialty_group",
         uniqueConstraints = {

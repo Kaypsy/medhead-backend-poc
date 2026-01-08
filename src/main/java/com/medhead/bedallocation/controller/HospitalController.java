@@ -4,6 +4,7 @@ import com.medhead.bedallocation.dto.HospitalCreateDTO;
 import com.medhead.bedallocation.dto.HospitalDTO;
 import com.medhead.bedallocation.dto.HospitalSummaryDTO;
 import com.medhead.bedallocation.dto.HospitalUpdateDTO;
+import com.medhead.bedallocation.exception.ErrorResponse;
 import com.medhead.bedallocation.service.HospitalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -118,10 +119,22 @@ public class HospitalController {
     // ------------- POST: créer (ADMIN) -------------
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Créer un hôpital (ADMIN)")
+    @Operation(summary = "Créer un hôpital (ADMIN)", 
+               description = "Permet de créer un nouvel hôpital. Nécessite le rôle ROLE_ADMIN. " +
+                             "Vérifie l'unicité du nom et la validité des coordonnées géographiques.")
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Hôpital créé", content = @Content(schema = @Schema(implementation = HospitalDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Requête invalide", content = @Content)
+        @ApiResponse(responseCode = "201", description = "Hôpital créé avec succès", 
+                     content = @Content(schema = @Schema(implementation = HospitalDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Données d'entrée invalides (ex: coordonnées hors bornes, champs obligatoires manquants)", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Authentification requise", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "Privilèges insuffisants (ADMIN requis)", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "409", description = "Conflit : un hôpital avec ce nom existe déjà", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "Erreur interne du serveur", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<HospitalDTO> create(@Valid @RequestBody HospitalCreateDTO request) {
         log.info("[HospitalController] POST /api/hospitals - création: name={}, city={}", request.getName(), request.getCity());

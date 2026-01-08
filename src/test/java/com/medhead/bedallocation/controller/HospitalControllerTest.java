@@ -20,6 +20,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.List;
+
+import com.medhead.bedallocation.repository.SpecialtyRepository;
+import com.medhead.bedallocation.repository.SpecialtyGroupRepository;
+import com.medhead.bedallocation.model.Specialty;
+import com.medhead.bedallocation.model.SpecialtyGroup;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(locations = "classpath:application-test.properties", properties = {
@@ -36,6 +43,12 @@ public class HospitalControllerTest {
 
     @Autowired
     private HospitalRepository hospitalRepository;
+
+    @Autowired
+    private SpecialtyRepository specialtyRepository;
+
+    @Autowired
+    private SpecialtyGroupRepository specialtyGroupRepository;
 
     private Long existingHospitalId;
 
@@ -172,5 +185,94 @@ public class HospitalControllerTest {
     void delete_returns403_withoutAdmin() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/hospitals/" + existingHospitalId))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("POST /api/hospitals - Reproduction erreur utilisateur")
+    @WithMockUser(username = "admin@admin.com", roles = {"ADMIN"})
+    void create_reproUserIssue() throws Exception {
+        // S'assurer que la spécialité 8 existe pour le test
+        SpecialtyGroup sg = new SpecialtyGroup();
+        sg.setCode("REPRO_GP");
+        sg.setName("Repro Group");
+        sg = specialtyGroupRepository.save(sg);
+
+        Specialty s = new Specialty();
+        s.setId(8L); // On essaie de forcer l'ID 8, mais H2 IDENTITY pourrait l'ignorer
+        s.setCode("REPRO_SPEC");
+        s.setName("Repro Specialty");
+        s.setSpecialtyGroup(sg);
+        s = specialtyRepository.save(s);
+        Long specId = s.getId();
+
+        // Payload fourni par l'utilisateur (adapté pour l'ID réel si ID 8 n'est pas possible)
+        String payload = """
+            {
+                "name":"Hôpital Bichat – Claude-Bernard",
+                "address":"46 rue Henri Huchard",
+                "city":"Paris",
+                "postalCode":"75018",
+                "totalBeds":500,
+                "specialtyIds":[%d],
+                "latitude":48.89899,
+                "longitude":2.33194,
+                "phoneNumber":"0147254094"
+            }
+            """.formatted(specId);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/hospitals")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("Hôpital Bichat – Claude-Bernard"))
+                .andExpect(jsonPath("$.specialtyIds[0]").value(specId));
+    }
+
+    @Test
+    @DisplayName("POST /api/hospitals - Reproduction erreur utilisateur V2")
+    @WithMockUser(username = "lzephir", roles = {"ADMIN"})
+    void create_reproUserIssue_v2() throws Exception {
+        // S'assurer que les spécialités 8 et 9 existent pour le test
+        SpecialtyGroup sg = new SpecialtyGroup();
+        sg.setCode("REPRO_GP_2");
+        sg.setName("Repro Group 2");
+        sg = specialtyGroupRepository.save(sg);
+
+        Specialty s8 = new Specialty();
+        s8.setCode("REPRO_SPEC_8");
+        s8.setName("Repro Specialty 8");
+        s8.setSpecialtyGroup(sg);
+        s8 = specialtyRepository.save(s8);
+        Long specId8 = s8.getId();
+
+        Specialty s9 = new Specialty();
+        s9.setCode("REPRO_SPEC_9");
+        s9.setName("Repro Specialty 9");
+        s9.setSpecialtyGroup(sg);
+        s9 = specialtyRepository.save(s9);
+        Long specId9 = s9.getId();
+
+        // Payload fourni par l'utilisateur
+        String payload = """
+            {
+                "name":"Hôpital Bichat – Claude-Bernard V2",
+                "address":"46 rue Henri Huchard",
+                "city":"Paris",
+                "postalCode":"75018",
+                "totalBeds":120,
+                "specialtyIds":[%d, %d],
+                "latitude":48.89899,
+                "longitude":2.33194,
+                "phoneNumber":"0147254094"
+            }
+            """.formatted(specId8, specId9);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/hospitals")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("Hôpital Bichat – Claude-Bernard V2"))
+                .andExpect(jsonPath("$.specialtyIds").isArray())
+                .andExpect(jsonPath("$.specialtyIds").value(org.hamcrest.Matchers.hasItems(specId8.intValue(), specId9.intValue())));
     }
 }

@@ -22,8 +22,11 @@ import java.util.Set;
  * correspondre aux données de référence officielles NHS (codes et libellés
  * normalisés). Cela garantit la cohérence des échanges et des rapports.
  */
+import lombok.ToString;
+
 @Data
 @Entity
+@ToString(exclude = {"hospitals", "beds"})
 @Table(
         name = "specialty",
         uniqueConstraints = {

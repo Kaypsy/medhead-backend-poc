@@ -15,8 +15,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import lombok.ToString;
+
 @Data
 @Entity
+@ToString(exclude = {"beds", "specialties"})
 @Table(name = "hospital",
        indexes = {
            @Index(name = "idx_hospital_city", columnList = "city"),

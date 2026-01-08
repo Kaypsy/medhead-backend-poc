@@ -32,12 +32,16 @@ public class GlobalExceptionHandler {
     }
 
     // 409 - Conflit / duplicat
-    @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateResource(DuplicateResourceException ex,
+    @ExceptionHandler({DuplicateResourceException.class, org.springframework.dao.DataIntegrityViolationException.class})
+    public ResponseEntity<ErrorResponse> handleDuplicateResource(Exception ex,
                                                                  HttpServletRequest request) {
-        log.warn("[409] {} - path={}", ex.getMessage(), request.getRequestURI());
+        String message = "Une ressource avec les mêmes caractéristiques existe déjà";
+        if (ex instanceof DuplicateResourceException) {
+            message = ex.getMessage();
+        }
+        log.warn("[409] {} - path={}", message, request.getRequestURI());
         HttpStatus status = HttpStatus.CONFLICT;
-        return new ResponseEntity<>(ErrorResponse.of(status, safeMessage(ex, status), request.getRequestURI()), status);
+        return new ResponseEntity<>(ErrorResponse.of(status, message, request.getRequestURI()), status);
     }
 
     // 400 - Opération invalide

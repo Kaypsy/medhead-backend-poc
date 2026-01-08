@@ -5,6 +5,7 @@ import com.medhead.bedallocation.model.Hospital;
 import com.medhead.bedallocation.model.Specialty;
 import org.mapstruct.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,7 +44,13 @@ public interface HospitalMapper {
     @AfterMapping
     default void afterCreate(@MappingTarget Hospital entity, HospitalCreateDTO dto, @Context Set<Specialty> specialties) {
         if (specialties != null) {
-            entity.setSpecialties(specialties);
+            entity.setSpecialties(new HashSet<>(specialties));
+        } else {
+            entity.setSpecialties(new HashSet<>());
+        }
+        // Initialiser la liste des lits si elle est nulle pour éviter NPE lors du calcul
+        if (entity.getBeds() == null) {
+            entity.setBeds(new java.util.ArrayList<>());
         }
         // Sync availableBeds from beds list
         entity.recalculateAvailableBeds();
@@ -61,7 +68,10 @@ public interface HospitalMapper {
     @AfterMapping
     default void afterUpdate(@MappingTarget Hospital entity, HospitalUpdateDTO dto, @Context Set<Specialty> specialties) {
         if (specialties != null) {
-            entity.setSpecialties(specialties);
+            entity.setSpecialties(new HashSet<>(specialties));
+        }
+        if (entity.getBeds() == null) {
+            entity.setBeds(new java.util.ArrayList<>());
         }
         entity.recalculateAvailableBeds();
     }

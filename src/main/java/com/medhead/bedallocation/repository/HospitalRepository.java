@@ -21,6 +21,8 @@ public interface HospitalRepository extends JpaRepository<Hospital, Long> {
 
     List<Hospital> findByCityAndIsActiveTrue(String city);
 
+    boolean existsByName(String name);
+
     /**
      * Projection légère pour retourner seulement les informations utiles à une recherche
      * de lits disponibles par spécialité. Utilisée pour réduire la quantité de données

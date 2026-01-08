@@ -33,14 +33,14 @@ class SpecialtyRepositoryTest {
         assertThat(opt).isPresent();
         Specialty s = opt.get();
         assertThat(s.getName()).isEqualTo("Cardiologie");
-        assertThat(s.getSpecialtyGroup()).isEqualTo("MED");
+        assertThat(s.getSpecialtyGroup().getCode()).isEqualTo("MED");
     }
 
     @Test
     @DisplayName("findBySpecialtyGroup doit retourner les spécialités du groupe")
     void testFindBySpecialtyGroup() {
         List<Specialty> meds = specialtyRepository.findBySpecialtyGroup("MED");
-        assertThat(meds).hasSize(2);
-        assertThat(meds).extracting(Specialty::getCode).containsExactlyInAnyOrder("CARD", "NEUR");
+        assertThat(meds).hasSize(3);
+        assertThat(meds).extracting(Specialty::getCode).containsExactlyInAnyOrder("CARD", "NEUR", "SPEC8");
     }
 }

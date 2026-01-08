@@ -1,5 +1,10 @@
 # MedHead Emergency Allocation – Backend
 
+![CI Feature](https://github.com/username/medhead-api/workflows/CI%20Feature/badge.svg?branch=develop)
+![CI Develop](https://github.com/username/medhead-api/workflows/CI%20Develop/badge.svg?branch=develop)
+![CD Production](https://github.com/username/medhead-api/workflows/CD%20Production/badge.svg?branch=main)
+[![Docker Image](https://img.shields.io/docker/v/username/medhead-api?label=docker)](https://hub.docker.com/r/username/medhead-api)
+
 Service Spring Boot (Java 17) pour la preuve de concept du système d’allocation d’hôpitaux/lits d’urgence.
 
 ## Description du projet

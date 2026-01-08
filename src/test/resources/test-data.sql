@@ -3,13 +3,22 @@ DELETE FROM bed;
 DELETE FROM hospital_specialty;
 DELETE FROM hospital;
 DELETE FROM specialty;
+DELETE FROM specialty_group;
+
+-- Groupes de spécialités
+INSERT INTO specialty_group (id, code, name, is_active)
+VALUES
+  (1, 'MED',  'Médecine', true),
+  (2, 'SURG', 'Chirurgie', true);
 
 -- Spécialités
 INSERT INTO specialty (id, code, name, specialty_group, description, is_active)
 VALUES 
-  (1, 'CARD', 'Cardiologie', 'MED', 'Cardiology specialty', true),
-  (2, 'NEUR', 'Neurologie',  'MED', 'Neurology specialty',  true),
-  (3, 'ORTH', 'Orthopédie',  'SURG','Orthopedics specialty',true);
+  (1, 'CARD', 'Cardiologie', 1, 'Cardiology specialty', true),
+  (2, 'NEUR', 'Neurologie',  1, 'Neurology specialty',  true),
+  (3, 'ORTH', 'Orthopédie',  2, 'Orthopedics specialty',true),
+  (8, 'SPEC8', 'Spécialité 8', 1, 'Test Specialty 8', true),
+  (9, 'SPEC9', 'Spécialité 9', 1, 'Test Specialty 9', true);
 
 -- Hôpitaux
 INSERT INTO hospital (id, name, address, city, postal_code, latitude, longitude, phone_number, total_beds, available_beds, is_active)

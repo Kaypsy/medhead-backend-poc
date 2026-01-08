@@ -57,6 +57,7 @@ public class SecurityConfig {
                 // Endpoints publics (on prévoit les chemins avec et sans le context-path /api)
                 .requestMatchers(
                     "/api/auth/**", "/auth/**",
+                    "/api/emergency/allocate", "/emergency/allocate",
                     "/api/docs/**", "/docs/**",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
