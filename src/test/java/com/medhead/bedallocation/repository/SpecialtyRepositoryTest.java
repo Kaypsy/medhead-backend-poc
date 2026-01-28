@@ -40,7 +40,7 @@ class SpecialtyRepositoryTest {
     @DisplayName("findBySpecialtyGroup doit retourner les spécialités du groupe")
     void testFindBySpecialtyGroup() {
         List<Specialty> meds = specialtyRepository.findBySpecialtyGroup("MED");
-        assertThat(meds).hasSize(3);
-        assertThat(meds).extracting(Specialty::getCode).containsExactlyInAnyOrder("CARD", "NEUR", "SPEC8");
+        assertThat(meds).hasSize(4);
+        assertThat(meds).extracting(Specialty::getCode).containsExactlyInAnyOrder("CARD", "NEUR", "SPEC8", "SPEC9");
     }
 }

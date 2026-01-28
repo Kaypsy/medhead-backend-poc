@@ -45,12 +45,14 @@ public class HospitalDTO {
     @NotNull
     @DecimalMin(value = "-90.0")
     @DecimalMax(value = "90.0")
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = com.medhead.bedallocation.dto.serde.CustomDoubleDeserializer.class)
     @Schema(description = "Latitude", example = "48.89899")
     private Double latitude;
 
     @NotNull
     @DecimalMin(value = "-180.0")
     @DecimalMax(value = "180.0")
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = com.medhead.bedallocation.dto.serde.CustomDoubleDeserializer.class)
     @Schema(description = "Longitude", example = "2.33194")
     private Double longitude;
 

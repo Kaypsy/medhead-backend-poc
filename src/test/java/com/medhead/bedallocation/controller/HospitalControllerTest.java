@@ -275,4 +275,25 @@ public class HospitalControllerTest {
                 .andExpect(jsonPath("$.specialtyIds").isArray())
                 .andExpect(jsonPath("$.specialtyIds").value(org.hamcrest.Matchers.hasItems(specId8.intValue(), specId9.intValue())));
     }
+    @Test
+    @DisplayName("POST /api/hospitals - Support format français (virgule)")
+    @WithMockUser(username = "lzephir", roles = {"ADMIN"})
+    void create_supportsFrenchNumberFormat() throws Exception {
+        String payload = """
+            {
+                "name":"Hôpital avec Virgule",
+                "city":"Paris",
+                "latitude":"48,89899",
+                "longitude":"2,33194",
+                "specialtyIds":[]
+            }
+            """;
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/hospitals")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.latitude").value(48.89899))
+                .andExpect(jsonPath("$.longitude").value(2.33194));
+    }
 }

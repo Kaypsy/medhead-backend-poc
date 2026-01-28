@@ -31,10 +31,12 @@ public class HospitalSummaryDTO {
     @NotNull
     @DecimalMin("-90.0")
     @DecimalMax("90.0")
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = com.medhead.bedallocation.dto.serde.CustomDoubleDeserializer.class)
     private Double latitude;
 
     @NotNull
     @DecimalMin("-180.0")
     @DecimalMax("180.0")
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = com.medhead.bedallocation.dto.serde.CustomDoubleDeserializer.class)
     private Double longitude;
 }
