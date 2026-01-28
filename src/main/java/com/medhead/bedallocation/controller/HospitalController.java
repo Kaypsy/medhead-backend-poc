@@ -103,16 +103,26 @@ public class HospitalController {
     // ------------- GET: plus proches avec disponibilité -------------
     @GetMapping("/search/nearest")
     @Operation(summary = "Rechercher les hôpitaux les plus proches avec disponibilité",
-        description = "Recherche par coordonnées (lat, lon) et spécialité. Paramètre limit optionnel (par défaut 10)")
+        description = "Recherche par coordonnées (latitude, longitude) et spécialité. Paramètre limit optionnel (par défaut 10)")
     public ResponseEntity<List<HospitalSummaryDTO>> searchNearest(
-            @RequestParam("lat") @Parameter(description = "Latitude", example = "48.8566") @NotNull Double lat,
-            @RequestParam("lon") @Parameter(description = "Longitude", example = "2.3522") @NotNull Double lon,
+            @RequestParam(name = "latitude", required = false) @Parameter(description = "Latitude", example = "48.8566") Double latitude,
+            @RequestParam(name = "lat", required = false) @Parameter(description = "Latitude (format court)", example = "48.8566") Double lat,
+            @RequestParam(name = "longitude", required = false) @Parameter(description = "Longitude", example = "2.3522") Double longitude,
+            @RequestParam(name = "lon", required = false) @Parameter(description = "Longitude (format court)", example = "2.3522") Double lon,
             @RequestParam("specialtyCode") @Parameter(description = "Code de la spécialité", example = "CARD") @NotBlank String specialtyCode,
             @RequestParam(value = "limit", required = false) @Parameter(description = "Nombre maximum de résultats", example = "5") @Positive Integer limit
     ) {
+        Double finalLat = (latitude != null) ? latitude : lat;
+        Double finalLon = (longitude != null) ? longitude : lon;
+
+        if (finalLat == null || finalLon == null) {
+            log.error("[HospitalController] Paramètres de coordonnées manquants : latitude={}, lat={}, longitude={}, lon={}", latitude, lat, longitude, lon);
+            return ResponseEntity.badRequest().build();
+        }
+
         int effectiveLimit = (limit == null || limit <= 0) ? 10 : limit;
-        log.info("[HospitalController] GET /api/hospitals/search/nearest lat={}, lon={}, specialtyCode={}, limit={}", lat, lon, specialtyCode, effectiveLimit);
-        List<HospitalSummaryDTO> list = hospitalService.findNearestHospitalsWithAvailability(lat, lon, specialtyCode, effectiveLimit);
+        log.info("[HospitalController] GET /api/hospitals/search/nearest lat={}, lon={}, specialtyCode={}, limit={}", finalLat, finalLon, specialtyCode, effectiveLimit);
+        List<HospitalSummaryDTO> list = hospitalService.findNearestHospitalsWithAvailability(finalLat, finalLon, specialtyCode, effectiveLimit);
         return ResponseEntity.ok(list);
     }
 

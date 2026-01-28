@@ -81,7 +81,13 @@ public class HospitalServiceImpl implements HospitalService {
         log.debug("[HospitalService] Spécialités résolues: count={}", specialties != null ? specialties.size() : 0);
         
         Hospital entity = hospitalMapper.fromCreateDto(dto, specialties);
-        entity.recalculateAvailableBeds();
+        
+        // Par défaut, à la création, on considère que tous les lits indiqués dans totalBeds sont disponibles
+        if (entity.getTotalBeds() != null && (entity.getBeds() == null || entity.getBeds().isEmpty())) {
+            entity.setAvailableBeds(entity.getTotalBeds());
+        } else {
+            entity.recalculateAvailableBeds();
+        }
         
         try {
             Hospital saved = hospitalRepository.save(entity);
