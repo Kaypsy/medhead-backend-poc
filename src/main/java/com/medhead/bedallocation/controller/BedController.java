@@ -75,6 +75,14 @@ public class BedController {
         return ResponseEntity.ok(bedService.findById(id));
     }
 
+    // ------------- GET: tous les lits d'un hôpital -------------
+    @GetMapping("/hospital/{hospitalId}")
+    @Operation(summary = "Lister tous les lits d'un hôpital (pour gestion)")
+    public ResponseEntity<List<BedDTO>> getByHospital(@PathVariable("hospitalId") Long hospitalId) {
+        log.debug("[BedController] GET /api/beds/hospital/{}", hospitalId);
+        return ResponseEntity.ok(bedService.findByHospital(hospitalId));
+    }
+
     // ------------- GET: lits disponibles d'un hôpital -------------
     @GetMapping("/hospital/{hospitalId}/available")
     @Operation(summary = "Lister les lits disponibles d'un hôpital")

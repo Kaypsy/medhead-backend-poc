@@ -122,6 +122,13 @@ public class BedServiceImpl implements BedService {
 
     // -------- Recherches / opérations métier --------
     @Override
+    public List<BedDTO> findByHospital(Long hospitalId) {
+        if (hospitalId == null) throw new BadRequestException("hospitalId est requis");
+        List<Bed> beds = bedRepository.findByHospitalId(hospitalId);
+        return bedMapper.toDtoList(beds);
+    }
+
+    @Override
     public List<BedAvailabilityDTO> findAvailableByHospital(Long hospitalId) {
         if (hospitalId == null) throw new BadRequestException("hospitalId est requis");
         List<Bed> beds = bedRepository.findByHospitalIdAndStatus(hospitalId, BedStatus.AVAILABLE);

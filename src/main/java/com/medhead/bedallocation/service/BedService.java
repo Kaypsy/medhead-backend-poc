@@ -22,6 +22,8 @@ public interface BedService {
     void delete(Long id);
 
     // -------- Recherches / opérations métier --------
+    List<BedDTO> findByHospital(Long hospitalId);
+
     List<BedAvailabilityDTO> findAvailableByHospital(Long hospitalId);
 
     List<BedAvailabilityDTO> findAvailableBySpecialty(Long specialtyId);

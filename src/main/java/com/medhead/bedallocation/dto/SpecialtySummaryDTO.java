@@ -30,6 +30,10 @@ public class SpecialtySummaryDTO {
     @Size(max = 150)
     private String name;
 
+    @Schema(description = "Indique si la spécialité est active", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull
+    private Boolean isActive;
+
     @Schema(description = "Groupe de spécialité")
     private SpecialtyGroupDTO specialtyGroup;
 }

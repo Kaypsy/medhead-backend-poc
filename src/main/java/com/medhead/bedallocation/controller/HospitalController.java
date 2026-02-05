@@ -197,4 +197,13 @@ public class HospitalController {
         HospitalDTO dto = hospitalService.removeSpecialtyFromHospital(hospitalId, specialtyId);
         return ResponseEntity.ok(dto);
     }
+
+    // ------------- POST: recalculer les disponibilités (ADMIN/USER) -------------
+    @PostMapping("/{id}/sync-beds")
+    @Operation(summary = "Recalculer les disponibilités d'un hôpital à partir de ses lits")
+    public ResponseEntity<HospitalDTO> syncBeds(@PathVariable("id") Long id) {
+        log.info("[HospitalController] POST /api/hospitals/{}/sync-beds", id);
+        HospitalDTO updated = hospitalService.updateAvailableBeds(id);
+        return ResponseEntity.ok(updated);
+    }
 }

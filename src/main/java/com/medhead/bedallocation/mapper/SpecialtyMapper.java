@@ -23,6 +23,7 @@ public interface SpecialtyMapper {
     @Mapping(target = "id", source = "id")
     @Mapping(target = "code", source = "code")
     @Mapping(target = "name", source = "name")
+    @Mapping(target = "isActive", source = "isActive")
     @Mapping(target = "specialtyGroup", expression = "java(mapGroup(entity.getSpecialtyGroup()))")
     SpecialtySummaryDTO toSummaryDto(Specialty entity);
 

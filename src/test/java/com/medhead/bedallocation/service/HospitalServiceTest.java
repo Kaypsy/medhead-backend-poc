@@ -181,10 +181,10 @@ class HospitalServiceTest {
         assertThat(captor.getValue().getId()).isEqualTo(1L); // assertion principale
     }
 
-    // findNearestHospitalsWithAvailability
     @Test
     void findNearestHospitalsWithAvailability_validInputs_returnsSortedLimitedList() {
         // Given
+        // H1 est à Paris (0 km de la recherche)
         HospitalAvailabilityProjection p1 = mock(HospitalAvailabilityProjection.class);
         when(p1.getId()).thenReturn(1L);
         when(p1.getName()).thenReturn("H1");
@@ -193,6 +193,7 @@ class HospitalServiceTest {
         when(p1.getLongitude()).thenReturn(2.3522);
         when(p1.getAvailableBeds()).thenReturn(5L);
 
+        // H2 est à Lyon (~400 km de la recherche)
         HospitalAvailabilityProjection p2 = mock(HospitalAvailabilityProjection.class);
         when(p2.getId()).thenReturn(2L);
         when(p2.getName()).thenReturn("H2");
@@ -202,13 +203,16 @@ class HospitalServiceTest {
         when(p2.getAvailableBeds()).thenReturn(2L);
 
         when(hospitalRepository.findActiveHospitalsWithAvailableBedsBySpecialty("CARD"))
-                .thenReturn(List.of(p2, p1)); // ordre initial quelconque
+                .thenReturn(List.of(p2, p1)); // On fournit Lyon puis Paris
 
         // When
-        List<HospitalSummaryDTO> result = service.findNearestHospitalsWithAvailability(48.8566, 2.3522, "CARD", 1);
+        // Recherche à Paris, limit 2 pour voir l'ordre
+        List<HospitalSummaryDTO> result = service.findNearestHospitalsWithAvailability(48.8566, 2.3522, "CARD", 2);
 
         // Then
-        assertThat(result).hasSize(1); // assertion principale (respect du limit)
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getName()).isEqualTo("H1"); // Paris doit être premier car plus proche
+        assertThat(result.get(1).getName()).isEqualTo("H2");
         verify(hospitalRepository).findActiveHospitalsWithAvailableBedsBySpecialty("CARD");
     }
 

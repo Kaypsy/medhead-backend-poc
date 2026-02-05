@@ -13,6 +13,7 @@ import com.medhead.bedallocation.repository.HospitalRepository;
 import com.medhead.bedallocation.repository.SpecialtyRepository;
 import com.medhead.bedallocation.service.exception.BadRequestException;
 import com.medhead.bedallocation.service.exception.ResourceNotFoundException;
+import com.medhead.bedallocation.util.DistanceCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -164,10 +165,25 @@ public class HospitalServiceImpl implements HospitalService {
         if (!StringUtils.hasText(specialtyCode)) throw new BadRequestException("Le code spécialité est requis");
         if (limit <= 0) throw new BadRequestException("Le paramètre limit doit être > 0");
 
+        String upperCode = specialtyCode.toUpperCase();
+        // On vérifie si la spécialité existe. Si elle n'existe pas avec le code exact, on tente en majuscules.
+        if (specialtyRepository.findByCode(specialtyCode).isEmpty() && specialtyRepository.findByCode(upperCode).isEmpty()) {
+            log.warn("[HospitalService] La spécialité demandée '{}' n'existe pas dans la base.", specialtyCode);
+        }
+
         // On récupère une projection des hôpitaux actifs ayant au moins un lit disponible pour la spécialité,
         // puis on calcule/ordonne localement par distance (Haversine) pour limiter à 'limit'.
+        // On tente d'abord avec le code exact, sinon avec le code en majuscules.
         List<HospitalRepository.HospitalAvailabilityProjection> projections =
                 hospitalRepository.findActiveHospitalsWithAvailableBedsBySpecialty(specialtyCode);
+        
+        if (projections.isEmpty() && !upperCode.equals(specialtyCode)) {
+            projections = hospitalRepository.findActiveHospitalsWithAvailableBedsBySpecialty(upperCode);
+        }
+
+        if (projections.isEmpty()) {
+            log.info("[HospitalService] Aucun hôpital avec lit disponible trouvé pour la spécialité '{}'", specialtyCode);
+        }
 
         List<HospitalSummaryDTO> sorted = projections.stream()
                 .map(p -> HospitalSummaryDTO.builder()
@@ -178,7 +194,7 @@ public class HospitalServiceImpl implements HospitalService {
                         .latitude(p.getLatitude())
                         .longitude(p.getLongitude())
                         .build())
-                .sorted(Comparator.comparingDouble(h -> haversineKm(lat, lon, h.getLatitude(), h.getLongitude())))
+                .sorted(Comparator.comparingDouble(h -> DistanceCalculator.haversineKm(lat, lon, h.getLatitude(), h.getLongitude())))
                 .limit(limit)
                 .collect(Collectors.toList());
 
@@ -266,19 +282,4 @@ public class HospitalServiceImpl implements HospitalService {
                 .collect(Collectors.toSet());
     }
 
-    /**
-     * Calcule la distance en kilomètres entre deux points géographiques à l'aide de la formule de Haversine.
-     * Cette formule suppose la Terre comme une sphère (R=6371km) et fournit une approximation suffisante
-     * pour des distances intra-pays. Complexité O(1).
-     */
-    private double haversineKm(double lat1, double lon1, double lat2, double lon2) {
-        final double R = 6371.0; // Rayon moyen de la Terre en kilomètres
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
 }

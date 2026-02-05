@@ -14,6 +14,8 @@ import java.util.List;
 public interface BedRepository extends JpaRepository<Bed, Long> {
 
     // Méthodes dérivées demandées
+    List<Bed> findByHospitalId(Long hospitalId);
+
     List<Bed> findByHospitalIdAndStatus(Long hospitalId, BedStatus status);
 
     List<Bed> findBySpecialtyIdAndStatus(Long specialtyId, BedStatus status);
